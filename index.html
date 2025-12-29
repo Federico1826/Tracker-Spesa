@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title> 📊 Tracker Spese </title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="contaniner">
+        <h1> 📊 Tracker Spese </h1>
+
+        <!-- FORM INSERIMENTO SPESA -->
+        <div class="form">
+            <input type="text" id="description" placeholder="Descrizione Spesa">
+            <input type="number" min="0.01" step="0.01" id="amount" placeholder="Importo €">
+            <!-- Previene gli errore già dall'HTML -->
+            <input type="date" id="date">
+
+            <select id="category">
+                <option value="" selected disabled>
+                    Scegli dove inserire la spesa
+                </option>
+                <option value="Cibo"> 🍔 Cibo </option>
+                <option value="Trasporti"> 🚗 Trasporti </option>
+                <option value="Svago"> 🎮 Svago </option>
+                <option value="Altro"> 📦 Altro </option>
+            </select>
+
+            <button id="addBtn"> Aggiungi </button>
+
+
+        </div>
+
+
+        <!-- FILTRO -->
+        <div class="filters">
+
+            <select id="filterCategory">
+                <option value="" selected disabled>Scegli una categoria</option>
+                <option value="all"> Tutte le categorie </option>
+                <option value="Cibo"> Cibo </option>
+                <option value="Trasporti"> Trasporti </option>
+                <option value="Svago"> Svago </option>
+                <option value="Altro"> Altro </option>
+            </select>
+
+            <div class="mont-filter">
+                <label for="filterMonth"> Mese: </label>
+                <input type="month" id="filterMonth">
+            </div>
+
+            <!-- RESET FILTRO -->
+            <button id="resetFilters"> 🔄 Reset filtri </button>
+
+        </div>
+
+
+
+        <!-- LISTA SPESE -->
+        <ul id="expenseList"></ul>
+
+        <!-- TOTALE -->
+        <h2 id="totalTitle">
+            Totale: € <span id="total"> 0 </span>
+        </h2>
+
+        <!-- CONTENITORE DEL GRAFICO A TORTA -->
+        <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+        </div>
+
+
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

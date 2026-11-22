@@ -72,13 +72,15 @@ button:hover {
 }
 
 /* LISTA DELLA SPESA */
-#expenseList {
+#expenseList,
+#incomeList {
     list-style: none;
     margin-bottom: 15px;
 }
 
 /* SINGOLA SPESA */
-#expenseList li {
+#expenseList li,
+#incomeList li {
     display: flex;
     justify-content: space-between;
     background-color: #3a3a3a;

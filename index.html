@@ -9,8 +9,21 @@
 
 <body>
 
-    <div class="contaniner">
+    <div class="container">
         <h1> 📊 Tracker Spese </h1>
+
+        <!-- FORM INSERIMENTO ENTRATA -->
+         <div class="form">
+            <input type="text" id="incomeDescription" placeholder="Descrizione Entrata">
+            <input type="number" min="0.01" step="0.01" id="incomeAmount" placeholder="Importo €">
+            <input type="date" id="incomeDate">
+
+            <button id="incomeButton"> Aggiungi Entrata</button>
+         </div>
+
+         <!-- LISTA DELLE ENTRATE -->
+          <h2> Storico Entrate </h2>
+          <ul id="incomeList">  </ul>
 
         <!-- FORM INSERIMENTO SPESA -->
         <div class="form">

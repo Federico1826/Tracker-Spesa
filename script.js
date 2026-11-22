@@ -1,9 +1,16 @@
 /* COLLEGAMENTO AGLI ELEMENTI HTML */
 
+const incomeAmountInput = document.getElementById('incomeAmount');
+const incomeDescriptionInput = document.getElementById('incomeDescription');
+const incomeDateInput = document.getElementById('incomeDate');
+const addIncomeButton = document.getElementById('incomeButton');
+const incomeList = document.getElementById('incomeList');
+
 const descriptionInput = document.getElementById('description');
 const amountInput = document.getElementById('amount');
 const categorySelect = document.getElementById('category');
 const dateInput = document.getElementById('date');
+
 
 const addBtn = document.getElementById('addBtn');
 
@@ -18,7 +25,11 @@ const filterMonth = document.getElementById("filterMonth");
 const resetFiltersBtn = document.getElementById("resetFilters");
 
 /* 🔹 2. ARRAY DELLE SPESE (IL NOSTRO DATABASE) */
-let expenses = [];
+let expenses = []; // Array per le spese
+
+let incomes = []; // Array per le entrate
+
+let editingIncomeId = null; // Memorizza l'Id dell'entrata che stiamo modificando
 
 let editingId = null; //  Serve per sapere se sto aggiungendo o modificando una spesa
 
@@ -36,13 +47,13 @@ function getTodayDate() {
 }
 
 
-/* 🔹 3. FUNZIONE PER AGGIUNGERE UNA SPESA */
+/* 🔹 4. FUNZIONE PER AGGIUNGERE UNA SPESA */
 function addExpense() {
     const description = descriptionInput.value.trim();
     const amount = Number(amountInput.value); // Number() trasforma il testo in numero
     const category = categorySelect.value;
 
-    if(!category) {
+    if (!category) {
         alert("Seleziona una categoria");
         return;
     }
@@ -99,7 +110,136 @@ function addExpense() {
     dateInput.value = getTodayDate();
 }
 
-/* 🔹 5. MOSTRARE LE SPESE A SCHERMO */
+/* 🔹 5. FUNZIONE PER AGGIUNGERE UNA SPESA */
+function addIncome() {
+    const description = incomeDescriptionInput.value.trim();
+    const amount = Number(incomeAmountInput.value);
+    let date = incomeDateInput.value;
+
+    // Controllo importo
+   if (description === '') {
+        alert('Inserisci una descrizione');
+        return;
+    }
+
+    // Controllo importo
+    if (incomeAmountInput.value.trim() === '' || !Number.isFinite(amount) || amount <= 0) {
+        alert('Inserisci un importo maggiore di 0');
+        return;
+    }
+
+    // Se non viene scelta una data, usa quella corrente
+    if (date == '') {
+        date = getTodayDate();
+    }
+
+    // Controllo se sto modificando o aggiungendo
+    if(editingIncomeId !== null) {
+        //Cerco l'entrata da modificare tramite ID
+        const income = incomes.find(
+            income => income.id === editingIncomeId
+        );
+        if(!income) return;
+
+        // Aggiorno i dati dell'entrata esistente
+        income.description = description;
+        income.amount = amount;
+        income.date = date;
+
+        // Termino la modalità modifca
+        editingIncomeId = null;
+
+        // Ripristino il testo del pulsante
+        addIncomeButton.textContent = "Aggiungi Entrta";
+    } else {
+        // Creo un oggetto che rappressnta le entrate
+    const income = {
+        id: Date.now(),
+        description: description,
+        amount: amount,
+        date: date
+    };
+    // Aggiungo l'oggetto all'array
+    incomes.push(income);
+    }
+
+     // Salvo le entrate nel LocalStorage    
+    saveIncomes();
+     // Aggiorno lo storico delle entrate
+    renderIncomes();
+    /* Per verificare il risultato nella console
+    console.log(incomes);*/
+
+    // Pulisco i campi dopo l'inserimento
+    incomeDescriptionInput.value = '';
+    incomeAmountInput.value = '';
+    incomeDateInput.value = getTodayDate();
+}
+
+/* 🔹 6. MOSTRARE LE ENTRATE A SCHERMO */
+function renderIncomes() {
+
+    // Svuoto la lista prima di aggiornarla 
+    incomeList.innerHTML = "";
+
+    // Scorro tutte le entrate presenti nell'array
+    incomes.forEach(income => {
+        const li = document.createElement('li');
+
+        // Insersico le informazioni dell'entrata
+        li.innerHTML = `
+        <span>
+        ${income.description} <br>
+        📅 ${income.date}
+        </span>
+        <div>
+        <strog> + €${income.amount.toFixed(2)}</strong>
+        <button onclick="editIncome(${income.id})">✏️</button>
+        <button onclick="deleteIncome(${income.id})">🗑️</button>
+        </div>  
+        `;
+
+        // Aggungo l'elemento alla lista HTML
+        incomeList.appendChild(li);
+    });
+}
+
+/* 🔹 7. FUNZIONE PER ELIMINARE LE ENTRATE */
+function deleteIncomes(id) {
+    const confirmed = confirm(
+        "Sei sicuro di voler eliminare questa entrata?"
+    );
+    if (!confirmed) return;
+
+    // Mantengo tutte le entrate trannte quella selezionata
+    incomes = incomes.filter(income => income.id !== id);
+
+    // Aggionrno il salbataggio e la visualizzazione
+    saveIncomes();
+    renderIncomes();
+}
+
+/* 🔹 8. FUNZIONE PER MODIFICARE UN'ENTRATA */
+function editIncome(id) {
+
+    //Cerco l'entrat tramtie id
+    const income = incomes.find(income => income.id === id);
+    if(!income) return;
+
+    // Riempio il modulo con dati esistenti
+    incomeDescriptionInput.value = income.description;
+    incomeAmountInput.value = income.amount;
+    incomeDateInput.value = income.date;
+
+    // Memorizzo quale entrata sto modificando
+    editingIncomeId = id;
+
+    // Cambio il testo del pulsante
+    addIncomeButton.textContent = "Salva Modifica";
+}
+
+
+/* 🔹 9. FUNZIONE PERMOSTRARE LE SPESE A SCHERMO */
 function renderExpenses() {
     expenseList.innerHTML = "";
 
@@ -127,7 +267,7 @@ function renderExpenses() {
     renderChart(); // Aggiorna il grafico
 }
 
-/* 🔹 6. CALCOLO DEL TOTALE */
+/* 🔹 10. CALCOLO DEL TOTALE */
 const totalTitle = document.getElementById("totalTitle");
 
 
@@ -153,19 +293,19 @@ function updateTotal() {
     if (filterCategory.value === "all" && filterMonth.value === "") {
         totalTitle.firstChild.textContent = "Totale: € ";
         return;
-    } 
-        let label = "Totale";
-        if(filterCategory.value !== "all") {
-           label += ` (${filterCategory.value}) `
-        }
-        if (filterMonth.value) 
-            label += `${filterMonth.value} `;
-        
-        totalTitle.firstChild.textContent = `${label}: € `;
     }
+    let label = "Totale";
+    if (filterCategory.value !== "all") {
+        label += ` (${filterCategory.value}) `
+    }
+    if (filterMonth.value)
+        label += `${filterMonth.value} `;
+
+    totalTitle.firstChild.textContent = `${label}: € `;
+}
 
 
-/* 🔹 7. FUNZIONE ELIMINA SPESA */
+/* 🔹 11. FUNZIONE ELIMINA SPESA */
 function deleteExpense(id) {
     const confirmed = confirm("Sei sicuro di voler eliminare questa spesa?");
 
@@ -176,7 +316,7 @@ function deleteExpense(id) {
     renderExpenses();
 }
 
-/* 🔹 8. FUNZIONE MODIFICA SPESA */
+/* 🔹 12. FUNZIONE MODIFICA SPESA */
 function editExpense(id) {
     const expense = expenses.find(exp => exp.id === id);
     if (!expense) return;
@@ -188,7 +328,7 @@ function editExpense(id) {
     editingId = id;
 }
 
-/* 🔹 9. LOCAL STORAGE */
+/* 🔹 13. LOCAL STORAGE */
 function saveExpenses() {
     localStorage.setItem("expenses", JSON.stringify(expenses));
 }
@@ -201,7 +341,23 @@ function loadExpenses() {
     }
 }
 
-/* 🔹 10. FUNZIONE PER CALCOLARE LE SPESE PER CATEGORIA */
+function saveIncomes() {
+    localStorage.setItem("incomes", JSON.stringify(incomes));
+}
+
+function loadIncomes() { // Carica le entrate dal Local Storage
+    const data = localStorage.getItem("incomes");
+    if (data) {
+        incomes = JSON.parse(data);
+    }
+
+    // Visualizzo le entrate caricate
+    renderIncomes();
+
+}
+
+
+/* 🔹 14. FUNZIONE PER CALCOLARE LE SPESE PER CATEGORIA */
 function getExpensesByCategory() {
     const totals = {};
 
@@ -214,7 +370,7 @@ function getExpensesByCategory() {
     return totals;
 }
 
-/* 🔹 11. FUNZIONE PER DISEGANRE IL GRAFICO */
+/* 🔹 15. FUNZIONE PER DISEGANRE IL GRAFICO */
 function renderChart() {
     const dataByCategory = getChartData();
     const labels = Object.keys(dataByCategory);
@@ -256,13 +412,13 @@ function renderChart() {
     });
 }
 
-/* 🔹 12. FUNZIONE PER FILTRARE LE SPESE */
+/* 🔹 16. FUNZIONE PER FILTRARE LE SPESE */
 function getFilteredExpenses() {
     const category = filterCategory.value;
     const month = filterMonth.value; // Formato YYYY-MM
 
     // Nessuna categoria selezionata
-    if(!category) return [];
+    if (!category) return [];
     return expenses.filter(exp => {
 
         // Filtro per categoria
@@ -275,7 +431,7 @@ function getFilteredExpenses() {
     });
 }
 
-/* 🔹 13. FUNZIONE CHE AGGREGA PER CATEGORIA SULLE SPESE FILTRATE */
+/* 🔹 17. FUNZIONE CHE AGGREGA PER CATEGORIA SULLE SPESE FILTRATE */
 function getChartData() {
     const filtered = getFilteredExpenses();
     const totals = {};
@@ -286,7 +442,7 @@ function getChartData() {
     return totals;
 }
 
-/* 🔹 14. FUNZIONE RESET FILTRI */
+/* 🔹 18. FUNZIONE RESET FILTRI */
 function resetFilters() {
     // Reset valori categorie
     filterCategory.value = "";
@@ -296,16 +452,17 @@ function resetFilters() {
 
     // ri-render completo
     renderExpenses();
-    
+
 }
 
-/* 🔹 15. FUNZIONE DISABILITA FILTRI */
+/* 🔹 19. FUNZIONE DISABILITA FILTRI */
 function updateResetButtonState() {
     resetFiltersBtn.disabled = filterCategory.value === "all";
 }
 
-/* 🔹 16. EVENTI */
+/* 🔹 20. EVENTI */
 addBtn.addEventListener("click", addExpense);
+addIncomeButton.addEventListener("click", addIncome);
 
 filterCategory.addEventListener("change", renderExpenses);
 filterMonth.addEventListener("change", renderExpenses);
@@ -313,4 +470,6 @@ resetFiltersBtn.addEventListener("click", resetFilters);
 
 // Carica all'avvio
 loadExpenses();
+loadIncomes();
 dateInput.value = getTodayDate(); // Imposta la data di oggi come default
+incomeDateInput.value = getTodayDate(); // Imposta la data di oggi come default
